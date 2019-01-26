@@ -1,11 +1,22 @@
-import requests, json, yaml, argparse
-from collections import defaultdict
+import argparse
+import json
+
+import requests
+import yaml
 
 def get_emoji(token):
     r = requests.get('https://slack.com/api/emoji.list?token={0}'.format(token))
     return json.loads(r.text)['emoji']
 
-if __name__ == "__main__":
+def get_url(emoji_name, emoji_to_url):
+    url = emoji_to_url[emoji_name]
+    if url[:4] == 'http':
+        return url
+    if url[:6] == 'alias:':
+        return get_url(url[6:], emoji_to_url)
+    return None
+
+def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument("--source-token", help="API token for the source slack", required=True)
     argparser.add_argument("--target-token", help="API token for the target slack", required=True)
@@ -29,18 +40,16 @@ if __name__ == "__main__":
         'title': 'Emoji sync',
         'emojis': []
     }
-    aliases = defaultdict(list)
 
     for missing in missing_emoji:
-        url = source_emoji[missing]
-        if url[:4] == 'http':
+        url = get_url(missing, source_emoji)
+        if url:
             result['emojis'].append({'name': missing, 'src': url})
-        elif url[:6] == 'alias:':
-            aliases[source_emoji[missing][6:]].append(missing)
-
-    for key, values in aliases.items():
-        result['emojis'].append({'name': key, 'aliases': values})
 
     if result['emojis']:
         with open(args.output, 'w') as outfile:
             yaml.dump(result, outfile, default_flow_style=False)
+
+
+if __name__ == "__main__":
+    main()

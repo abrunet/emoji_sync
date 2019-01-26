@@ -1,6 +1,7 @@
 #!/bin/bash
 
-CRON_USER_HOME=
+WORK_DIR=
+VIRTUAL_ENV_DIR=
 SOURCE_TOKEN=
 TARGET_TOKEN=
 BLACKLIST_PATH=
@@ -8,9 +9,9 @@ WORKSPACE_NAME=
 UPLOAD_ACCOUNT_EMAIL=
 UPLOAD_ACCOUNT_PASSWORD=
 
-cd $CRON_USER_HOME/work/emoji_sync
-source $CRON_USER_HOME/venv/emoji_sync/bin/activate
-python $CRON_USER_HOME/bin/emoji_sync.py "$SOURCE_TOKEN" "$TARGET_TOKEN" --blacklist "$BLACKLIST_PATH"
+cd $WORK_DIR
+source $VIRTUAL_ENV_DIR/bin/activate
+emoji_sync "$SOURCE_TOKEN" "$TARGET_TOKEN" --blacklist "$BLACKLIST_PATH"
 
 sync_file=sync.yml
 if [ -e $sync_file ]; then
