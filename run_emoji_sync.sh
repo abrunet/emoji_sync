@@ -11,7 +11,7 @@ UPLOAD_ACCOUNT_PASSWORD=
 
 cd $WORK_DIR
 source $VIRTUAL_ENV_DIR/bin/activate
-emoji_sync "$SOURCE_TOKEN" "$TARGET_TOKEN" --blacklist "$BLACKLIST_PATH"
+emoji-sync "$SOURCE_TOKEN" "$TARGET_TOKEN" --blacklist "$BLACKLIST_PATH"
 
 sync_file=sync.yml
 if [ -e $sync_file ]; then

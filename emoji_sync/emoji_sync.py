@@ -9,11 +9,12 @@ def get_emoji(token):
     return json.loads(r.text)['emoji']
 
 def get_url(emoji_name, emoji_to_url):
-    url = emoji_to_url[emoji_name]
-    if url[:4] == 'http':
-        return url
-    if url[:6] == 'alias:':
-        return get_url(url[6:], emoji_to_url)
+    if emoji_name in emoji_to_url:
+        url = emoji_to_url[emoji_name]
+        if url[:4] == 'http':
+            return url
+        if url[:6] == 'alias:':
+            return get_url(url[6:], emoji_to_url)
     return None
 
 def main():
@@ -45,6 +46,10 @@ def main():
         url = get_url(missing, source_emoji)
         if url:
             result['emojis'].append({'name': missing, 'src': url})
+        else:
+            mapping = source_emoji[missing] if missing in source_emoji else ""
+            print("'{0}' can't be synched, consider adding it to the blacklist. [{1}]".format(
+                missing, mapping))
 
     if result['emojis']:
         with open(args.output, 'w') as outfile:
