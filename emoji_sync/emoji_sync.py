@@ -8,13 +8,15 @@ import yaml
 
 SOURCE_EMOJI = 'source_emoji_cache.json'
 
-def request_and_cache_api(file_name, api_request, time_delta=(60 * 5)):
-    if os.path.exists(file_name) and os.path.getmtime(file_name) + time_delta < time.time():
+def request_and_cache_api(file_name, api_request, time_delta=(60 * 2)):
+    if os.path.exists(file_name) and time.time() - os.path.getmtime(file_name) < time_delta:
         with open(file_name) as cached_result:
             cached_data = cached_result.read()
             if cached_data:
                 print("Reusing cached response from '{0}'.".format(file_name))
                 return json.loads(cached_data)
+            else:
+                print("Found no data in '{0}'.".format(file_name))
 
     print("Loading data from API call.")
     request_result = api_request()
@@ -26,10 +28,14 @@ def request_and_cache_api(file_name, api_request, time_delta=(60 * 5)):
     return json.loads(request_result.text)
 
 def emoji_list(token):
-    return lambda x: requests.get('https://slack.com/api/emoji.list?token={0}'.format(token))
+    def inner_func():
+        print("Calling emoji list API")
+        return requests.get('https://slack.com/api/emoji.list?token={0}'.format(token))
+
+    return inner_func
 
 def get_emoji(token):
-    return json.loads(emoji_list(token).text)['emoji']
+    return json.loads(emoji_list(token)().text)['emoji']
 
 def get_url(emoji_name, emoji_to_url):
     if emoji_name in emoji_to_url:
@@ -54,7 +60,7 @@ def main():
         with open(args.blacklist) as blacklist_file:
             blacklist.update(blacklist_file.read().splitlines())
 
-    source_emoji = request_and_cache_api(SOURCE_EMOJI, emoji_list(args.source_token))
+    source_emoji = request_and_cache_api(SOURCE_EMOJI, emoji_list(args.source_token))['emoji']
     target_emoji = get_emoji(args.target_token)
 
     missing_emoji = source_emoji.keys() - target_emoji.keys() - blacklist
