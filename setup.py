@@ -10,6 +10,7 @@ setup(name='emoji_sync',
           'console_scripts': [
               'emoji-sync=emoji_sync.emoji_sync:main',
               'emoji-report=emoji_sync.emoji_report:main',
+              'new-peeps=emoji_sync.new_peeps:main',
           ],
       },
       install_requires=[
